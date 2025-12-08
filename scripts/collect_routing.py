@@ -9,24 +9,37 @@ Usage:
 import modal
 import os
 
-# Create Modal image with our modified vLLM
-image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "torch",
-    "datasets",
-    "huggingface_hub",
-    "git+https://github.com/Mario928/speculative-moe.git#subdirectory=vllm_modified",
+# Image: Official vLLM + our profiling code patched in
+image = (
+    modal.Image.from_registry("nvidia/cuda:12.8.0-devel-ubuntu22.04", add_python="3.12")
+    .entrypoint([])
+    .apt_install("git")
+    .run_commands(
+        # Step 1: Clone & install official vLLM
+        "git clone https://github.com/vllm-project/vllm.git /vllm",
+        "cd /vllm && VLLM_USE_PRECOMPILED=1 pip install --editable .",
+        # Step 2: Clone our repo and copy profiling code
+        "git clone https://github.com/Mario928/speculative-moe.git /app",
+        "cp -r /app/vllm_modified/vllm/custom_profiling /vllm/vllm/",
+        # Step 3: Patch layer.py - insert profiler hook before return statement
+        "sed -i '/return topk_weights, topk_ids, zero_expert_result/i\\        # Profiler hook\\n        try:\\n            from vllm.custom_profiling.routing_profiler import get_profiler\\n            get_profiler().record(self.layer_name, topk_ids, topk_weights)\\n        except: pass' /vllm/vllm/model_executor/layers/fused_moe/layer.py",
+    )
+    .uv_pip_install("datasets", "huggingface-hub==0.36.0", "flashinfer-python==0.5.2")
+    .env({"HF_XET_HIGH_PERFORMANCE": "1"})
 )
 
-app = modal.App("speculative-moe-collection", image=image)
+app = modal.App("routing-collection", image=image)
 
-# Volume to persist collected data
+# Volumes
 volume = modal.Volume.from_name("routing-data", create_if_missing=True)
+hf_cache_vol = modal.Volume.from_name("huggingface-cache", create_if_missing=True)
+vllm_cache_vol = modal.Volume.from_name("vllm-cache", create_if_missing=True)
 
 
 @app.function(
     gpu="A100",
-    timeout=7200,  # 2 hours
-    volumes={"/data": volume},
+    timeout=7200,
+    volumes={"/data": volume, "/root/.cache/huggingface": hf_cache_vol, "/root/.cache/vllm": vllm_cache_vol},
 )
 def collect_routing_data(
     num_problems: int = 5,
@@ -58,9 +71,10 @@ def collect_routing_data(
     # Initialize Mixtral
     print("Loading Mixtral-8x7B...")
     llm = LLM(
-        model="mistralai/Mixtral-8x7B-v0.1",
-        tensor_parallel_size=1,
-        max_model_len=2048,
+        model="TheBloke/Mixtral-8x7B-v0.1-AWQ",
+        quantization="awq",
+        max_model_len=4096,
+        gpu_memory_utilization=0.9,
     )
     
     sampling_params = SamplingParams(
@@ -122,6 +136,7 @@ def list_collected_data():
 @app.function(volumes={"/data": volume})
 def download_data(filename: str):
     """Download a specific routing data file."""
+    volume.reload()
     with open(f"/data/{filename}", "r") as f:
         return f.read()
 
