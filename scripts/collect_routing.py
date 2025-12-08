@@ -75,6 +75,7 @@ def collect_routing_data(
         quantization="awq",
         max_model_len=4096,
         gpu_memory_utilization=0.9,
+        enforce_eager=True,  # Disable CUDA graphs to avoid capture error
     )
     
     sampling_params = SamplingParams(
