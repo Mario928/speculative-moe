@@ -161,7 +161,6 @@ def main(
     result = collect_routing_data.remote(num_problems, dataset)
     
     print(f"\nCollection complete!")
-    print(f"  Output file: {result['output_file']}")
     print(f"  Problems processed: {result['num_problems']}")
     
     # Download the data
