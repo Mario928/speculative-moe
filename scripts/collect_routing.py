@@ -83,17 +83,13 @@ def collect_routing_data(
         max_tokens=256,
     )
     
-    # Get profiler
-    from vllm.custom_profiling.routing_profiler import get_profiler
-    profiler = get_profiler()
-    
     # Process each problem one at a time
     results = []
     for i, prompt in enumerate(prompts):
         print(f"Processing problem {i+1}/{len(prompts)}...")
         
-        # Set problem ID
-        profiler.set_problem_id(i)
+        # Set problem ID via env var (subprocess will read this)
+        os.environ["CURRENT_PROBLEM_ID"] = str(i)
         
         # Run inference
         outputs = llm.generate([prompt], sampling_params)
@@ -104,20 +100,26 @@ def collect_routing_data(
             "output_preview": outputs[0].outputs[0].text[:100] + "...",
         })
     
-    # Save routing data
-    output_path = f"/data/{dataset_name}_routing.jsonl"
-    profiler.save(output_path)
+    # Commit volume to persist routing data
+    volume.commit()
     
-    # Commit volume
+    # Check if data was collected
+    raw_path = "/data/routing_raw.jsonl"
+    if os.path.exists(raw_path):
+        import shutil
+        shutil.copy(raw_path, f"/data/{dataset_name}_routing.jsonl")
+        num_records = sum(1 for _ in open(raw_path))
+        print(f"Collected {num_records} routing records")
+    else:
+        print("Warning: No routing data found at", raw_path)
+    
     volume.commit()
     
     print(f"\nDone! Processed {len(prompts)} problems.")
-    print(f"Routing data saved to {output_path}")
     
     return {
         "dataset": dataset_name,
         "num_problems": len(prompts),
-        "output_file": output_path,
         "samples": results[:3],
     }
 
