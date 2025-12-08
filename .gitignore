@@ -1,0 +1,17 @@
+# Ignore others folder (local notes, not for GitHub)
+others/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
