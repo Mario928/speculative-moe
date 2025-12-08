@@ -36,6 +36,39 @@ For each token at each MoE layer, we capture:
 - **HumanEval** (164 problems): [openai_humaneval](https://huggingface.co/datasets/openai_humaneval) - coding tasks
 - **GSM8K** (1319 problems): [gsm8k](https://huggingface.co/datasets/gsm8k) - grade school math
 
+## GPU Requirements & Quantization
+
+### Memory Requirements
+
+Mixtral-8x7B has different VRAM requirements depending on precision:
+
+| Precision | VRAM Required | Single A100-80GB? |
+|-----------|---------------|-------------------|
+| FP16/BF16 | ~90-100 GB | ❌ No |
+| INT8 | ~45 GB | ✅ Yes |
+| INT4 (AWQ) | ~22 GB | ✅ Yes |
+
+### Why Quantization is Valid for This Research
+
+In vLLM's Mixtral implementation, **the router/gate is NOT quantized** even when using AWQ or GPTQ:
+
+> "The `self.gate` component has `quant_config=None` and always runs at half / full precision"
+> — [vLLM source code](https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/models/mixtral.py)
+
+This means:
+- Router decisions happen at FP16 precision (not quantized)
+- Only expert FFN weights are quantized
+- **Routing patterns remain authentic** with quantized models
+
+### Model Choice
+
+We use AWQ-quantized Mixtral for this research:
+```python
+llm = LLM(model="TheBloke/Mixtral-8x7B-v0.1-AWQ", quantization="awq")
+```
+
+This allows running on a single A100-80GB while preserving authentic routing behavior.
+
 ## Project Structure
 
 ```
