@@ -21,11 +21,11 @@ image = (
         # Step 2: Clone our repo and copy profiling code
         "git clone https://github.com/Mario928/speculative-moe.git /app",
         "cp -r /app/vllm_modified/vllm/custom_profiling /vllm/vllm/",
-        # Step 3: Patch layer.py - insert profiler hook before return statement
-        "sed -i '/return topk_weights, topk_ids, zero_expert_result/i\\        # Profiler hook\\n        try:\\n            from vllm.custom_profiling.routing_profiler import get_profiler\\n            get_profiler().record(self.layer_name, topk_ids, topk_weights)\\n        except: pass' /vllm/vllm/model_executor/layers/fused_moe/layer.py",
+        # Step 3: Run patch script from our repo
+        "python /app/scripts/patch_vllm.py",
     )
     .uv_pip_install("datasets", "huggingface-hub==0.36.0", "flashinfer-python==0.5.2")
-    .env({"HF_XET_HIGH_PERFORMANCE": "1"})
+    .env({"HF_XET_HIGH_PERFORMANCE": "1", "ROUTING_PROFILER_ENABLED": "1"})
 )
 
 app = modal.App("routing-collection", image=image)
