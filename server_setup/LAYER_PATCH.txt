@@ -1,0 +1,36 @@
+================================================================================
+PATCH FOR: vllm/model_executor/layers/fused_moe/layer.py
+================================================================================
+
+Find the method that returns `topk_weights, topk_ids, zero_expert_result`
+(around line 1655 in the `select_experts` method of `FusedMoEModularKernel`)
+
+ADD THESE 3 LINES right before the `return` statement:
+
+        # Record routing decisions for analysis
+        from vllm.custom_profiling.routing_profiler import get_profiler
+        get_profiler().record(self.layer_name, topk_ids, topk_weights)
+
+================================================================================
+BEFORE (original):
+================================================================================
+
+        else:
+            zero_expert_result = None
+        
+        return topk_weights, topk_ids, zero_expert_result
+
+================================================================================
+AFTER (with patch):
+================================================================================
+
+        else:
+            zero_expert_result = None
+        
+        # Record routing decisions for analysis
+        from vllm.custom_profiling.routing_profiler import get_profiler
+        get_profiler().record(self.layer_name, topk_ids, topk_weights)
+        
+        return topk_weights, topk_ids, zero_expert_result
+
+================================================================================

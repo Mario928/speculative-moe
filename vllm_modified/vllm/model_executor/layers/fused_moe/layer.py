@@ -1653,9 +1653,24 @@ class FusedMoE(CustomOp):
         else:
             zero_expert_result = None
         
-        # Record routing decisions for analysis
-        from vllm.custom_profiling.routing_profiler import get_profiler
-        get_profiler().record(self.layer_name, topk_ids, topk_weights)
+        # Routing profiler hook - writes directly to file
+        import os as _os
+        if _os.getenv("ROUTING_PROFILER_ENABLED", "0") == "1":
+            try:
+                import json as _json
+                _layer_idx = int(self.layer_name.split("layers.")[1].split(".")[0])
+                _ids = topk_ids.detach().cpu().tolist()
+                _weights = topk_weights.detach().cpu().tolist()
+                _problem_id = int(_os.getenv("CURRENT_PROBLEM_ID", "0"))
+                _dataset = _os.getenv("CURRENT_DATASET", "unknown")
+                with open("/data/routing_raw.jsonl", "a") as _f:
+                    for _tok_idx, (_eid, _wt) in enumerate(zip(_ids, _weights)):
+                        # Filter padding: skip if weights are uniform (both ~0.5)
+                        if len(_wt) == 2 and abs(_wt[0] - 0.5) < 0.01 and abs(_wt[1] - 0.5) < 0.01:
+                            continue
+                        _f.write(_json.dumps({"dataset": _dataset, "problem_id": _problem_id, "layer": _layer_idx, "token_pos": _tok_idx, "experts": _eid, "weights": _wt}) + "\\n")
+            except Exception as _e:
+                print(f"[HOOK ERR] {_e}")
         
         return topk_weights, topk_ids, zero_expert_result
 
