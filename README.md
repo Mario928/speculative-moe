@@ -1,18 +1,11 @@
 # speculative-moe
 ## Cross-Layer Routing Patterns for MoE Optimization
 
-Research project analyzing cross-layer routing predictability in Mixture-of-Experts (MoE) models for potential speculative execution optimizations.
+Research project analyzing cross-layer routing patterns in Mixture-of-Experts (MoE) models.
 
-## Research Question
+## Overview
 
-**"If a token goes to Expert X at Layer N, how likely is it to go to Expert X at Layer N+1?"**
-
-If routing is predictable, we could potentially:
-- Execute multiple layers in parallel (speculative execution)
-- Assume same expert, validate later
-- Rollback only if prediction was wrong
-
-This project focuses on **measuring** predictability. Implementation is future work.
+This project analyzes routing patterns in Mixture-of-Experts (MoE) models to understand cross-layer expert selection behavior.
 
 ## Methodology
 
