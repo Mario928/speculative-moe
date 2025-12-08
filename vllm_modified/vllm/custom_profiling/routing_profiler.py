@@ -25,6 +25,9 @@ class RoutingProfiler:
         self.enabled = os.getenv("ROUTING_PROFILER_ENABLED", "0") == "1"
         self.data = []
         self.current_problem_id = 0
+        self._record_count = 0
+        # Debug: print status on init
+        print(f"[RoutingProfiler] Initialized. enabled={self.enabled}, env={os.getenv('ROUTING_PROFILER_ENABLED', 'NOT SET')}")
     
     @classmethod
     def get_instance(cls) -> 'RoutingProfiler':
@@ -51,12 +54,21 @@ class RoutingProfiler:
             topk_ids: shape [num_tokens, k] - selected expert indices
             topk_weights: shape [num_tokens, k] - gating probabilities
         """
+        self._record_count += 1
+        
+        # Debug: print first few calls
+        if self._record_count <= 5:
+            print(f"[RoutingProfiler] record() called #{self._record_count}: layer={layer_name}, enabled={self.enabled}")
+        
         if not self.enabled:
             return
         
         # parse layer number from layer_name
         # "model.layers.5.block_sparse_moe" -> 5
-        layer_idx = int(layer_name.split("layers.")[1].split(".")[0])
+        try:
+            layer_idx = int(layer_name.split("layers.")[1].split(".")[0])
+        except:
+            layer_idx = -1
         
         # move tensors to CPU for logging
         ids = topk_ids.detach().cpu().tolist()
@@ -75,6 +87,8 @@ class RoutingProfiler:
     
     def save(self, filepath: str):
         """Save recorded data to JSON file."""
+        print(f"[RoutingProfiler] save() called. enabled={self.enabled}, record_count={self._record_count}, data_len={len(self.data)}")
+        
         if not self.data:
             print("No routing data to save.")
             return
