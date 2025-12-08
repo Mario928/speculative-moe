@@ -14,14 +14,17 @@ if not layer.exists():
 
 code = layer.read_text()
 
-# The hook to insert
+# The hook to insert - with debug printing
 hook = """
-        # Routing profiler hook
-        try:
-            from vllm.custom_profiling.routing_profiler import get_profiler
-            get_profiler().record(self.layer_name, topk_ids, topk_weights)
-        except Exception:
-            pass
+        # Routing profiler hook - DEBUG VERSION
+        import os as _os
+        if _os.getenv("ROUTING_PROFILER_ENABLED", "0") == "1":
+            try:
+                from vllm.custom_profiling.routing_profiler import get_profiler
+                _profiler = get_profiler()
+                _profiler.record(self.layer_name, topk_ids, topk_weights)
+            except Exception as _e:
+                print(f"[PROFILER ERROR] {type(_e).__name__}: {_e}")
 """
 
 # Insert before return statement
@@ -44,3 +47,4 @@ else:
     code = code.replace(target, hook + "        " + target)
     layer.write_text(code)
     print("Patched layer.py successfully!")
+
