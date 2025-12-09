@@ -73,13 +73,17 @@ class RoutingProfiler:
         # Write directly to file (avoids memory buildup)
         with open(self.output_path, "a") as f:
             for token_idx, (expert_ids, gating_probs) in enumerate(zip(ids, weights)):
-                # Filter padding: skip if weights are uniform (~0.5, 0.5)
+                # PADDING FILTER (SKIP):
+                # vLLM pads batches with dummy tokens that have EXACTLY [0.5, 0.5] weights
+                # Real tokens have uneven weights like [0.73, 0.27]
+                # Using exact comparison to avoid filtering real tokens with close-to-0.5 weights
+                # → We SKIP these padding tokens (not recorded to file)
                 if len(gating_probs) == 2:
-                    if abs(gating_probs[0] - 0.5) < 0.01 and abs(gating_probs[1] - 0.5) < 0.01:
+                    if gating_probs[0] == 0.5 and gating_probs[1] == 0.5:
                         continue
                 
                 entry = {
-                    "dataset": self.current_dataset,
+                    "dataset": os.getenv("CURRENT_DATASET", "unknown"),
                     "problem_id": self.current_problem_id,
                     "layer": layer_idx,
                     "token_pos": token_idx,  # Position in batch
