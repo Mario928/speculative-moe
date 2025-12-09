@@ -89,17 +89,26 @@ def main():
     prompts = prompts[:args.num_problems]
     print(f"Processing {len(prompts)} problems...")
     
-    # Initialize vLLM
-    # Using FP8 quantization (8-bit) on single GPU for complete routing data
-    # - Single GPU = no expert parallelism = complete data for all 32 layers
-    # - FP8 preserves routing patterns while fitting in 1x A100 80GB
-    # - enforce_eager required for profiler's .cpu() calls
+    # Initialize vLLM - Single GPU with FP8 quantization (8-bit, best quality)
+    # Options:
+    #   FP8 (8-bit): neuralmagic/Mixtral-8x7B-Instruct-v0.1-FP8 (~56GB) - RECOMMENDED
+    #   AWQ (4-bit): TheBloke/Mixtral-8x7B-v0.1-AWQ (~28GB) - smaller but more lossy
+    
     llm = LLM(
-        model="neuralmagic/Mixtral-8x7B-Instruct-v0.1-FP8",
-        tensor_parallel_size=1,
+        model="neuralmagic/Mixtral-8x7B-Instruct-v0.1-FP8",  # 8-bit FP8
+        tensor_parallel_size=1,  # Single GPU - captures ALL routing data
         gpu_memory_utilization=0.90,
-        enforce_eager=True,
+        enforce_eager=True,  # Required: disables CUDA graphs (conflicts with .cpu() in profiler)
     )
+    
+    # Alternative: AWQ 4-bit (if FP8 doesn't fit)
+    # llm = LLM(
+    #     model="TheBloke/Mixtral-8x7B-v0.1-AWQ",
+    #     quantization="awq",
+    #     tensor_parallel_size=1,
+    #     gpu_memory_utilization=0.90,
+    #     enforce_eager=True,
+    # )
     
     sampling_params = SamplingParams(
         temperature=0.0,  # Greedy for deterministic routing
