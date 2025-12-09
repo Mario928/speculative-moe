@@ -93,7 +93,8 @@ def main():
     llm = LLM(
         model="mistralai/Mixtral-8x7B-Instruct-v0.1",
         tensor_parallel_size=2,
-        gpu_memory_utilization=0.90,
+        gpu_memory_utilization=0.80,
+        enforce_eager=True,  # Required: disables CUDA graphs (conflicts with .cpu() in profiler)
     )
     
     sampling_params = SamplingParams(
