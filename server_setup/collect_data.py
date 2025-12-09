@@ -78,8 +78,8 @@ def process_raw_data(raw_path: str, output_path: str):
         for d in decode_records:
             f.write(json.dumps(d) + '\n')
     
-    # Delete raw temp file
-    os.remove(raw_path)
+    # Keep raw file for debugging (uncomment to auto-delete):
+    # os.remove(raw_path)
     
     return len(decode_records)
 
