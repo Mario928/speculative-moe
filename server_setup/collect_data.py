@@ -89,12 +89,16 @@ def main():
     prompts = prompts[:args.num_problems]
     print(f"Processing {len(prompts)} problems...")
     
-    # Initialize vLLM (2x A100, tensor parallel)
+    # Initialize vLLM
+    # Using FP8 quantization (8-bit) on single GPU for complete routing data
+    # - Single GPU = no expert parallelism = complete data for all 32 layers
+    # - FP8 preserves routing patterns while fitting in 1x A100 80GB
+    # - enforce_eager required for profiler's .cpu() calls
     llm = LLM(
-        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        tensor_parallel_size=2,
-        gpu_memory_utilization=0.80,
-        enforce_eager=True,  # Required: disables CUDA graphs (conflicts with .cpu() in profiler)
+        model="neuralmagic/Mixtral-8x7B-Instruct-v0.1-FP8",
+        tensor_parallel_size=1,
+        gpu_memory_utilization=0.90,
+        enforce_eager=True,
     )
     
     sampling_params = SamplingParams(
