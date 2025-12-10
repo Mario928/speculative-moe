@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-10T04:50:47.543741",
+    "rules_file": "rules_p0_first5.json",
+    "training_files": [
+      "p0_token_0.jsonl",
+      "p0_token_1.jsonl",
+      "p0_token_2.jsonl",
+      "p0_token_3.jsonl",
+      "p0_token_4.jsonl"
+    ],
+    "test_files": [
+      "p0_token_5.jsonl",
+      "p0_token_6.jsonl",
+      "p0_token_7.jsonl",
+      "p0_token_8.jsonl",
+      "p0_token_9.jsonl"
+    ],
+    "num_test_files": 5
+  },
+  "results": {
+    "level1": {
+      "correct": 18,
+      "total": 79,
+      "accuracy_percent": 22.78,
+      "vs_random": 1.82
+    },
+    "level2": {
+      "correct": 8,
+      "total": 28,
+      "accuracy_percent": 28.57,
+      "vs_random": 2.29
+    },
+    "level3": {
+      "correct": 3,
+      "total": 9,
+      "accuracy_percent": 33.33,
+      "vs_random": 2.67
+    },
+    "level4": {
+      "correct": 13,
+      "total": 32,
+      "accuracy_percent": 40.62,
+      "vs_random": 3.25
+    },
+    "level5_skip2": {
+      "correct": 14,
+      "total": 78,
+      "accuracy_percent": 17.95,
+      "vs_random": 1.44
+    },
+    "level5_skip4": {
+      "correct": 15,
+      "total": 72,
+      "accuracy_percent": 20.83,
+      "vs_random": 1.67
+    },
+    "level5_skip8": {
+      "correct": 10,
+      "total": 61,
+      "accuracy_percent": 16.39,
+      "vs_random": 1.31
+    }
+  },
+  "best_level": {
+    "name": "level4",
+    "accuracy_percent": 40.62
+  }
+}
