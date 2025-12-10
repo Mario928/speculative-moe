@@ -1,32 +1,3 @@
-{"dataset": "humaneval", "problem_id": 0, "layer": 0, "experts": [3, 2], "gating_probs": [0.8327813148498535, 0.1672186702489853], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 1, "experts": [4, 2], "gating_probs": [0.5273165106773376, 0.47268348932266235], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 2, "experts": [5, 4], "gating_probs": [0.9621075987815857, 0.037892427295446396], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 3, "experts": [5, 2], "gating_probs": [0.9345744848251343, 0.06542547047138214], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 4, "experts": [0, 2], "gating_probs": [0.7937461733818054, 0.2062538117170334], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 5, "experts": [4, 6], "gating_probs": [0.6334102749824524, 0.36658975481987], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 6, "experts": [4, 0], "gating_probs": [0.6531268954277039, 0.34687307476997375], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 7, "experts": [4, 3], "gating_probs": [0.7846493124961853, 0.21535074710845947], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 8, "experts": [2, 6], "gating_probs": [0.8747207522392273, 0.1252792626619339], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 9, "experts": [0, 3], "gating_probs": [0.5175709128379822, 0.4824291467666626], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 10, "experts": [7, 4], "gating_probs": [0.7318258881568909, 0.26817411184310913], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 11, "experts": [7, 1], "gating_probs": [0.8349458575248718, 0.1650540828704834], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 12, "experts": [6, 1], "gating_probs": [0.7671669721603394, 0.23283304274082184], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 13, "experts": [0, 6], "gating_probs": [0.6566582322120667, 0.34334173798561096], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 14, "experts": [1, 7], "gating_probs": [0.8177201151847839, 0.18227994441986084], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 15, "experts": [3, 6], "gating_probs": [0.5341265201568604, 0.46587345004081726], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 16, "experts": [6, 5], "gating_probs": [0.538983166217804, 0.46101677417755127], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 17, "experts": [0, 1], "gating_probs": [0.8169911503791809, 0.1830088496208191], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 18, "experts": [3, 1], "gating_probs": [0.5175709128379822, 0.4824291169643402], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 19, "experts": [1, 5], "gating_probs": [0.976669192314148, 0.023330768570303917], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 20, "experts": [7, 0], "gating_probs": [0.989065945148468, 0.010934011079370975], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 21, "experts": [4, 6], "gating_probs": [0.8289388418197632, 0.1710611879825592], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 22, "experts": [6, 5], "gating_probs": [0.9105454087257385, 0.08945460617542267], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 23, "experts": [7, 2], "gating_probs": [0.7041601538658142, 0.2958398759365082], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 24, "experts": [5, 3], "gating_probs": [0.6566582322120667, 0.34334173798561096], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 25, "experts": [3, 6], "gating_probs": [0.9815597534179688, 0.018440209329128265], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 26, "experts": [4, 0], "gating_probs": [0.9944180250167847, 0.005581962876021862], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 27, "experts": [7, 5], "gating_probs": [0.5273165106773376, 0.47268345952033997], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 28, "experts": [0, 6], "gating_probs": [0.9074763655662537, 0.09252366423606873], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 29, "experts": [5, 3], "gating_probs": [0.8110781311988831, 0.18892180919647217], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 30, "experts": [1, 3], "gating_probs": [0.888372004032135, 0.11162799596786499], "token_idx": 3}
-{"dataset": "humaneval", "problem_id": 0, "layer": 31, "experts": [6, 3], "gating_probs": [0.562176525592804, 0.4378235340118408], "token_idx": 3}
+version https://git-lfs.github.com/spec/v1
+oid sha256:7229434c7505e85946773bb17ab6489b36aef39bbbf23634a91fef1eafc7dfe7
+size 4745

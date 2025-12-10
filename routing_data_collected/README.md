@@ -2,10 +2,6 @@
 
 This folder contains MoE routing decisions collected from **Mixtral-8x7B-Instruct-v0.1-FP8** during inference on HumanEval and GSM8K datasets.
 
-> [!NOTE]  
-> **Large files (`*_full_routing.jsonl`) are not in git** due to GitHub's 100MB limit.  
-> Contact the maintainers for access to the full routing data files (~214MB total).
-
 ## Data Files
 
 | File | Description | Problems | Records |
