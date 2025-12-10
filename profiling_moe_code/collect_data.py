@@ -47,31 +47,42 @@ def process_raw_data(raw_path: str, output_path: str):
     raw_data = [json.loads(line) for line in open(raw_path)]
     print(f"Raw records: {len(raw_data)}")
     
+    # Get unique problem_ids from the data
+    problem_ids = sorted(set(d['problem_id'] for d in raw_data))
+    print(f"Found {len(problem_ids)} problems: {problem_ids}")
+    
     decode_records = []
     
-    for layer in range(32):  # Mixtral has 32 layers
-        layer_records = [d for d in raw_data if d['layer'] == layer]
+    # Process each problem separately, then each layer within that problem
+    for problem_id in problem_ids:
+        problem_records = [d for d in raw_data if d['problem_id'] == problem_id]
         
-        # Find where decode starts (first token_pos=0 after sequential prefill)
-        decode_start = None
-        for i, d in enumerate(layer_records):
-            if i > 0 and layer_records[i-1]['token_pos'] > 0 and d['token_pos'] == 0:
-                decode_start = i
-                break
-        
-        if decode_start is not None:
-            # Find where first decode cycle ends
-            decode_end = len(layer_records)
-            for i in range(decode_start + 1, len(layer_records)):
-                if layer_records[i]['token_pos'] > 0:
-                    decode_end = i
+        for layer in range(32):  # Mixtral has 32 layers
+            layer_records = [d for d in problem_records if d['layer'] == layer]
+            
+            if not layer_records:
+                continue
+            
+            # Find where decode starts (first token_pos=0 after sequential prefill)
+            decode_start = None
+            for i, d in enumerate(layer_records):
+                if i > 0 and layer_records[i-1]['token_pos'] > 0 and d['token_pos'] == 0:
+                    decode_start = i
                     break
             
-            # Extract decode tokens with 0-indexed token_idx
-            for idx, d in enumerate(layer_records[decode_start:decode_end]):
-                d['token_idx'] = idx
-                del d['token_pos']  # Remove batch position, not needed
-                decode_records.append(d)
+            if decode_start is not None:
+                # Find where first decode cycle ends
+                decode_end = len(layer_records)
+                for i in range(decode_start + 1, len(layer_records)):
+                    if layer_records[i]['token_pos'] > 0:
+                        decode_end = i
+                        break
+                
+                # Extract decode tokens with 0-indexed token_idx
+                for idx, d in enumerate(layer_records[decode_start:decode_end]):
+                    d['token_idx'] = idx
+                    del d['token_pos']  # Remove batch position, not needed
+                    decode_records.append(d)
     
     # Save processed data
     with open(output_path, 'w') as f:
@@ -99,6 +110,10 @@ def main():
     os.environ["CURRENT_DATASET"] = args.dataset
     raw_path = os.path.join(args.output_dir, "routing_raw.jsonl")
     os.environ["ROUTING_OUTPUT_PATH"] = raw_path
+    
+    # File-based problem_id communication (env vars don't update after worker spawn)
+    problem_id_file = os.path.join(args.output_dir, ".current_problem_id")
+    os.environ["PROBLEM_ID_FILE"] = problem_id_file
     
     profiler = get_profiler()
     profiler.clear_output()
@@ -140,6 +155,9 @@ def main():
     with open(outputs_path, "w") as f_out:
         for i, (task_id, prompt) in enumerate(prompts):
             print(f"  Problem {i+1}/{num_problems}...")
+            # Write problem_id to file (worker process reads this)
+            with open(problem_id_file, 'w') as f:
+                f.write(str(i))
             profiler.set_context(problem_id=i, dataset=args.dataset)
             result = llm.generate([prompt], sampling_params)
             generated = result[0].outputs[0].text

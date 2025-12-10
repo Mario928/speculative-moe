@@ -82,9 +82,19 @@ class RoutingProfiler:
                     if gating_probs[0] == 0.5 and gating_probs[1] == 0.5:
                         continue
                 
+                # Read problem_id from file (main process writes before each generate)
+                problem_id_file = os.getenv("PROBLEM_ID_FILE")
+                problem_id = 0
+                if problem_id_file and os.path.exists(problem_id_file):
+                    try:
+                        with open(problem_id_file, 'r') as pid_f:
+                            problem_id = int(pid_f.read().strip())
+                    except:
+                        pass
+                
                 entry = {
                     "dataset": os.getenv("CURRENT_DATASET", "unknown"),
-                    "problem_id": self.current_problem_id,
+                    "problem_id": problem_id,
                     "layer": layer_idx,
                     "token_pos": token_idx,  # Position in batch
                     "experts": expert_ids,
