@@ -7,6 +7,8 @@ Research project analyzing cross-layer routing patterns in Mixture-of-Experts (M
 
 This project collects and analyzes routing decisions from Mixtral-8x7B to discover predictable patterns that can be exploited for speculative pipeline parallelism optimization.
 
+**Key Result**: We achieve **55.6% Top-1** and **73.2% Top-2** accuracy for expert prediction — an accuracy improvement of **+345% (4.5×)** over random guessing.
+
 ## Target Model
 
 **Mixtral-8x7B-Instruct-v0.1-FP8** (8-bit quantized)
@@ -25,17 +27,14 @@ In MoE models:
 2. The **experts** (FFN weights) perform the actual computation
 3. Quantization (FP8/AWQ/GPTQ) only applies to expert weights, not the router
 
-This means:
-- Routing decisions happen at full FP16 precision
-- Only expert FFN computations use quantized weights
-- **Routing patterns remain identical** to full-precision models
-
-This is a standard practice — MoE routers are highly sensitive, and quantization noise could route tokens to wrong experts. vLLM and other frameworks explicitly keep routers unquantized.
+This means routing patterns remain identical to full-precision models. MoE routers are highly sensitive, and quantization noise could route tokens to wrong experts — so vLLM and other frameworks explicitly keep routers unquantized.
 
 ## Datasets
 
-- **HumanEval** (164 problems): [openai_humaneval](https://huggingface.co/datasets/openai_humaneval) — coding tasks
-- **GSM8K** (1319 problems): [gsm8k](https://huggingface.co/datasets/gsm8k) — grade school math
+- **HumanEval**: 164 problems (code generation) — [openai_humaneval](https://huggingface.co/datasets/openai_humaneval)
+- **GSM8K**: 80 problems profiled (math reasoning) — [gsm8k](https://huggingface.co/datasets/gsm8k)
+
+Combined: **1.43M routing records** across 244 problems, split 98/1/1 for train/val/test.
 
 ## Project Structure
 
@@ -48,22 +47,25 @@ speculative-moe/
 │   ├── README.md                # Setup instructions
 │   ├── collect_data.py          # Main data collection script
 │   ├── custom_profiling/        # vLLM routing profiler
-│   │   ├── __init__.py
-│   │   └── routing_profiler.py
 │   └── LAYER_PATCH.txt          # vLLM layer.py patch
 │
 ├── routing_data_collected/      # Collected routing data
 │   ├── README.md                # Data format documentation
-│   ├── humaneval_full_routing.jsonl  # Full HumanEval routing (164 problems)
-│   ├── humaneval_full_outputs.jsonl  # Full HumanEval generations
-│   ├── gsm8k_full_routing.jsonl      # Full GSM8K routing (1319 problems)
-│   ├── gsm8k_full_outputs.jsonl      # Full GSM8K generations
-│   └── ...                       # Additional test runs
+│   ├── sample/                  # Sample datasets (2 problems each)
+│   ├── humaneval_full_*.jsonl   # Full HumanEval data (164 problems)
+│   └── gsm8k_full_*.jsonl       # Full GSM8K data (80 problems profiled)
 │
-├── analysis/                    # Analysis scripts and results
-│   └── ...                      # Various analysis outputs
+├── experiment_and_evaluation/   # All experiments and results
+│   ├── README.md                # Experiment navigation guide
+│   ├── preprocess_data.py       # Data preprocessing
+│   ├── processed_data/          # Train/val/test splits
+│   ├── 1_lookup_table/          # Step 1: Frequency-based rules
+│   ├── 2_xgboost/               # Step 2: Classical ML baseline
+│   ├── 3_bayesian_search/       # Step 3: Hyperparameter optimization
+│   ├── 4_neural_network_mlp/    # Step 4: Final optimized model
+│   └── Final_Experiment_Evaluation_Summary.md  # Results summary
 │
-└── datasets/                    # Dataset configurations
+└── others/                      # Legacy scripts and notes
 ```
 
 ## Methodology
@@ -77,11 +79,25 @@ For each token at each MoE layer, we capture:
 - `experts` — which top-2 experts were selected
 - `gating_probs` — gating probabilities for selected experts
 
-### Analysis
+### What We Discovered
 
-1. **Layer bias analysis**: Which experts dominate at each layer
-2. **Cross-layer patterns**: Expert transition probabilities between layers
-3. **Predictability**: Can we predict layer N+1 routing from layer N decisions
+**1. Layer-Expert Patterns**  
+Certain experts are preferred at certain layers. We captured this in our Level 1 lookup rules (Layer → Expert frequency).
+
+**2. Cross-Layer Transitions**  
+Expert transitions between layers are not random — they follow predictable patterns. Our Level 2-3 rules capture (Layer, Previous Expert(s), Current Expert) → Next Expert probabilities.
+
+**3. Predictability — The Main Finding**  
+Yes, we can predict Layer N+1 routing from Layer N decisions. Our best model achieves:
+
+| Model | Top-1 Accuracy | Top-2 Accuracy | vs Random |
+|-------|----------------|----------------|-----------|
+| Random Baseline | 12.5% | 25.0% | — |
+| Lookup Table (Best) | 42.2% | 56.2% | +237% (3.4x) |
+| XGBoost | 36.2% | 53.3% | +189% (2.9x) |
+| **Neural Network (MLP)** | **55.6%** | **73.2%** | **+345% (4.5x)** |
+
+This means if we speculatively prepare 2 experts ahead of time, we'll be correct 73% of the time — enabling significant pipeline parallelism gains.
 
 ## Quick Start
 

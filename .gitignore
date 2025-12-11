@@ -16,3 +16,16 @@ build/
 # OS
 .DS_Store
 vllm_modified/
+
+# Large data files (too big for GitHub)
+routing_data_collected/humaneval_tokens/
+routing_data_collected/gsm8k_tokens/
+routing_data_collected/*_fixed.jsonl
+experiment_and_evaluation/processed_data/
+temp_tokenwise_split/
+*.pt
+*.pth
+
+# Large generated files
+experiment_and_evaluation/1_lookup_table/rules.json
+experiment_and_evaluation/1_lookup_table/evaluation_results.json
