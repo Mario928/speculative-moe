@@ -38,7 +38,8 @@ Output: 8-class softmax (expert IDs)
 
 ## Results
 | Metric | Value |
-|--------|-------|\n| **Test Top-1** | **55.60%** |
+|--------|-------|
+| **Test Top-1** | **55.60%** |
 | **Test Top-2** | **73.24%** |
 | Improvement over Random | **+345% (4.5×)** |
 
